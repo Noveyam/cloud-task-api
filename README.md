@@ -1,4 +1,4 @@
-# cloud-task-api
+Cloud Task Management API
 
 A cloud‑native Task Management REST API built with Django and Django REST Framework, designed to demonstrate real‑world backend engineering practices including authentication, containerization, infrastructure as code, and Kubernetes deployment on AWS.
 
