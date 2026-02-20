@@ -3,6 +3,17 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from .models import Task
+from .serializers import TaskCreateSerializer
+
+class TaskCreateView(generics.CreateAPIView):
+    serializer_class = TaskCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 logger = logging.getLogger("django")
 

@@ -26,7 +26,8 @@ def health_check(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("users.urls")),
-    path("", lambda request: JsonResponse({"message": "Cloud Task API"}), name="root"),
     path("health/", health_check, name="health_check"),
+    path("", include("users.urls")),
+    path("", include("tasks.urls")),
+    path("", lambda request: JsonResponse({"message": "Cloud Task API"}), name="root"),
 ]
