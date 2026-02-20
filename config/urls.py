@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.http import JsonResponse
 
 
@@ -26,6 +26,7 @@ def health_check(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("users.urls")),
     path("", lambda request: JsonResponse({"message": "Cloud Task API"}), name="root"),
     path("health/", health_check, name="health_check"),
 ]
