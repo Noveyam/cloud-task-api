@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 # Create your models here.
 
-class Task(models.TextChoices):
+class Task(models.Model):
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
         IN_PROGRESS = 'in_progress', 'In Progress'
