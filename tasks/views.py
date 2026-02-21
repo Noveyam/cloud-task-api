@@ -6,14 +6,17 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from .models import Task
-from .serializers import TaskCreateSerializer
+from .serializers import TaskSerializer
 
-class TaskCreateView(generics.CreateAPIView):
-    serializer_class = TaskCreateSerializer
+class TaskListCreateView(generics.ListCreateAPIView):
+    serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
-
+    
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user).order_by('-created_at')
+    
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+            serializer.save(owner=self.request.user)
 
 logger = logging.getLogger("django")
 
