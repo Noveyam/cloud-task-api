@@ -6,6 +6,7 @@ from rest_framework.renderers import JSONRenderer
 
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsOwner
 
 from .models import Task
 from .serializers import TaskSerializer
@@ -18,11 +19,11 @@ class TaskListCreateView(generics.ListCreateAPIView):
         return Task.objects.filter(owner=self.request.user).order_by('-created_at')
     
     def perform_create(self, serializer):
-            serializer.save(owner=self.request.user)
+        serializer.save(owner=self.request.user)
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         return Task.objects.filter(owner=self.request.user)
