@@ -1,4 +1,9 @@
-Cloud Task Management API
+# Cloud Task Management API
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Django](https://img.shields.io/badge/django-rest--api-green)
+![Docker](https://img.shields.io/badge/docker-containerized-blue)
+![AWS](https://img.shields.io/badge/aws-ec2-orange)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 A cloud‑native Task Management REST API built with Django and Django REST Framework, designed to demonstrate real‑world backend engineering practices including authentication, containerization, infrastructure as code, and Kubernetes deployment on AWS.
 
@@ -118,10 +123,45 @@ Security Design
 
 ⸻
 
+Containerization
+
+The application is containerized using Docker.
+
+Key container features:
+
+- Multi-stage Docker build
+- Non-root container user
+- Optimized image size
+- Uvicorn ASGI server for production workloads
+
+⸻
+
+Health Check
+
+The API exposes a health endpoint used for monitoring and container orchestration.
+
+Endpoint:
+
+GET /health/
+
+Example response:
+
+{
+  "status": "ok"
+}
+
+This endpoint can be used by:
+
+- Docker health checks
+- Kubernetes liveness probes
+- Load balancer monitoring
+
+⸻
+
 🛠 Tech Stack
 
 Backend
-	•	Python 3.9
+	•	Python 3.12
 	•	Django
 	•	Django REST Framework
 	•	JWT Authentication
@@ -154,9 +194,11 @@ cloud-task-api/
 │   └── urls.py
 ├── manage.py
 ├── requirements.txt
+├── Dockerfile
+├── .dockerignore
+├── .env.example
 ├── .gitignore
 └── README.md
-
 
 ⸻
 
@@ -192,13 +234,38 @@ Expected response:
 
 {"status": "ok"}
 
-
 ⸻
 
-Authentication (Planned)
-	•	JWT‑based authentication
-	•	Token refresh support
-	•	User‑scoped task access
+Run Locally with Docker
+
+The API can also be run using Docker.
+
+Build the image:
+
+docker build -t cloud-task-api .
+
+Run the container:
+
+docker run --rm -p 8000:8000 \
+  -e DJANGO_ALLOWED_HOSTS="127.0.0.1,localhost" \
+  cloud-task-api
+
+Test the health endpoint:
+
+curl http://127.0.0.1:8000/health/
+
+Environment Variables
+
+The application uses environment variables for configuration.
+
+Example:
+
+DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+DJANGO_SECRET_KEY=your-secret-key
+
+A sample configuration file is provided:
+
+.env.example
 
 ⸻
 
@@ -209,9 +276,9 @@ Deployment Status
 - Systemd-managed app service
 - SQLite database
 - Public health check endpoint
+- Docker containerization
 
 #Planned
-- Docker containerization
 - Terraform infrastructure provisioning
 - Deployment to Kubernetes (EKS)
 - PostgreSQL via Amazon RDS
