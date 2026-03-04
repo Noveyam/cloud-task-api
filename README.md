@@ -31,38 +31,43 @@ The service is designed to be:
 
 Architecture Diagram (Request Flow)
 
-                 ┌──────────────────────┐
-                 │      Client          │
-                 │  (Browser / curl)    │
-                 └──────────┬───────────┘
-                            │
-                            │ HTTP :80
-                            ▼
-                 ┌──────────────────────┐
-                 │        Nginx         │
-                 │  Reverse Proxy       │
-                 │  Port 80 (Public)    │
-                 └──────────┬───────────┘
-                            │
-                            │ Proxy to 127.0.0.1:8000
-                            ▼
-                 ┌──────────────────────┐
-                 │      Uvicorn         │
-                 │  ASGI App Server     │
-                 │  Port 8000 (Private) │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │      Django API      │
-                 │  REST Framework      │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │     SQLite DB        │
-                 │  (Local Database)    │
-                 └──────────────────────┘
+                       (Public Internet)
+                              |
+                              |  HTTP :80
+                              v
++-------------------+   +------------------------+
+| Client            |-->| EC2 Security Group     |
+| (Browser / curl)  |   | Inbound: 80 (and 22*)  |
++-------------------+   +------------------------+
+                              |
+                              v
+                    +----------------------+
+                    | Nginx (Reverse Proxy)|
+                    | Listens on :80       |
+                    +----------+-----------+
+                               |
+                               | proxy_pass to localhost:8000
+                               v
+                    +----------------------+
+                    | Uvicorn (ASGI)       |
+                    | Listens on 127.0.0.1 |
+                    | :8000 (private)      |
+                    +----------+-----------+
+                               |
+                               v
+                    +----------------------+
+                    | Django + DRF         |
+                    | /health/, /tasks/    |
+                    +----------+-----------+
+                               |
+                               v
+                    +----------------------+
+                    | Database             |
+                    | SQLite (dev)         |
+                    | Postgres (prod)      |
+                    +----------------------+
+
+*SSH :22 should be restricted to your IP (x.x.x.x/32)
 
 Client → Nginx (80) → Uvicorn (127.0.0.1:8000) → Django → Database
 
