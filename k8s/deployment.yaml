@@ -4,23 +4,28 @@ metadata:
   name: cloud-task-api
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: cloud-task-api
-
   template:
     metadata:
       labels:
         app: cloud-task-api
-
     spec:
       containers:
       - name: api
         image: cloud-task-api:prod
         ports:
         - containerPort: 8000
-
-        env:
-        - name: DJANGO_ALLOWED_HOSTS
-          value: "*"
+        envFrom:
+        - configMapRef:
+            name: cloud-task-api-config
+        - secretRef:
+            name: cloud-task-api-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

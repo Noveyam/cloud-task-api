@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-task-api-config
+data:
+  DJANGO_ALLOWED_HOST: "127.0.0.1, localhost"
+  DJANGO_DEBUG: "False"
