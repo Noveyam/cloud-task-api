@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: cloud-task-api-config
 data:
-  DJANGO_ALLOWED_HOST: "127.0.0.1, localhost"
+  DJANGO_ALLOWED_HOSTS: "127.0.0.1, localhost, aa8fbe7bd63684a088c0723ee788f47b-1265398914.us-east-1.elb.amazonaws.com"
   DJANGO_DEBUG: "False"

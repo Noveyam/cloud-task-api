@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: api
-        image: cloud-task-api:prod
+        image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:4c1e056634b31dac22d55cc738eb112eb9994a5e
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         envFrom:
