@@ -19,11 +19,11 @@ module "vpc" {
   single_nat_gateway = true
 
   public_subnet_tags = {
-    "kubernetes.io/role/elb" = 1
+    "kubernetes.io/role/elb" = "1"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = 1
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 
@@ -42,18 +42,18 @@ module "eks" {
   subnet_ids             = module.vpc.private_subnets
 
   addons = {
-  vpc-cni = {
-    most_recent = true
-    resolve_conflicts = "OVERWRITE"
-    preserve = false
+    vpc-cni = {
+      most_recent       = true
+      resolve_conflicts = "OVERWRITE"
+      preserve          = false
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    coredns = {
+      most_recent = true
+    }
   }
-  kube-proxy = {
-    most_recent = true
-  }
-  coredns = {
-    most_recent = true
-  }
-}
 
 
   eks_managed_node_groups = {
