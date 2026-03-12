@@ -32,7 +32,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.arn:aws:iam::766158721264:role/github-actions-deploy-cloud-task-api }}
 
       - name: Log in to Amazon ECR
         id: login-ecr
