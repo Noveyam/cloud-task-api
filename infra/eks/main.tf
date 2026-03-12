@@ -32,7 +32,7 @@ module "eks" {
   version = "~> 21.0"
 
   name               = var.cluster_name
-  kubernetes_version = "1.31"
+  kubernetes_version = "1.35"
 
   authentication_mode                      = "API_AND_CONFIG_MAP"
   enable_cluster_creator_admin_permissions = true
@@ -43,18 +43,19 @@ module "eks" {
 
   addons = {
     vpc-cni = {
-      most_recent       = true
-      resolve_conflicts = "OVERWRITE"
-      preserve          = false
+      before_compute = true
+      most_recent    = true
+      preserve       = false
     }
     kube-proxy = {
-      most_recent = true
+      before_compute = true
+      most_recent    = true
     }
     coredns = {
-      most_recent = true
+      before_compute = true
+      most_recent    = true
     }
   }
-
 
   eks_managed_node_groups = {
     default = {
