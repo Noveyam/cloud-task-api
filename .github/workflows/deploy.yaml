@@ -53,6 +53,13 @@ jobs:
           aws eks update-kubeconfig \
             --region $AWS_REGION \
             --name $EKS_CLUSTER_NAME
+      
+      - name: Debug EKS auth
+        run: |
+          aws sts get-caller-identity
+          kubectl config current-context
+          kubectl auth can-i get pods -A || true
+          kubectl get nodes    
 
       - name: Verify cluster access
         run: |
