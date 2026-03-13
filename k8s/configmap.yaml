@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: cloud-task-api-config
 data:
-  DJANGO_ALLOWED_HOSTS: "127.0.0.1, localhost, a8faace118d2b4fad91d48697c39474c-906663082.us-east-1.elb.amazonaws.com"
+  DJANGO_ALLOWED_HOSTS: "127.0.0.1, localhost, *" #Update elb when starting Terraform
   DJANGO_DEBUG: "False"
