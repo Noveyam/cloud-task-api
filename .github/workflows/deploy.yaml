@@ -49,6 +49,17 @@ jobs:
 
       - name: Update kubeconfig for EKS
         run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name $EKS_CLUSTER_NAME
+
+      - name: Verify cluster access
+        run: |
+          kubectl config current-context
+          kubectl get nodes
+
+      - name: Update deployment image
+        run: |
           kubectl set image deployment/$DEPLOYMENT_NAME \
             $CONTAINER_NAME=$IMAGE_URI \
             -n $K8S_NAMESPACE
