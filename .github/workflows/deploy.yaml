@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   AWS_REGION: us-east-1
   ECR_REPOSITORY: cloud-task-api
   EKS_CLUSTER_NAME: cloud-task-api-eks
@@ -26,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -71,3 +72,9 @@ jobs:
       - name: Veriy rollout
         run: |
           kubectl rollout status deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE
+
+      - name: Verify health endpoint
+        run: |
+          ELB_DNS=$(kubectl get svc cloud-task-api-service -n $K8S_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "ELB_DNS=$ELB_DNS"
+          curl -f "http://$ELB_DNS/health/"
