@@ -4,6 +4,11 @@ metadata:
   name: cloud-task-api
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: cloud-task-api
@@ -20,18 +25,24 @@ spec:
         - containerPort: 8000
         readinessProbe:
           httpGet:
-            path: /health
+            path: /health/
             port: 8000
-          initialDelaySeconds: 10
+            httpHeaders:
+            - name: Host
+              value: localHost
+          initialDelaySeconds: 15
           periodSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 6
         livenessProbe:
           httpGet:
             path: /health/
             port: 8000
-          initialDelaySeconds: 20
+            httpHeaders:
+              - name: Host
+                value: localHost
+          initialDelaySeconds: 30
           periodSeconds: 10
-          failureThreshold: 3
+          failureThreshold: 5
         envFrom:
         - configMapRef:
             name: cloud-task-api-config
