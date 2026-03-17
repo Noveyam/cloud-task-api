@@ -37,6 +37,34 @@ SECRET_KEY = (
     or "unsafe-dev-key"
 )
 
+DB_NAME = os.getenv("DB_NAME") or read_secret_file("/mnt/secrets/DB_NAME")
+DB_USER = os.getenv("DB_USER") or read_secret_file("/mnt/secrets/DB_USER")
+DB_PASSWORD = (
+    os.getenv("DB_PASSWORD")
+    or read_secret_file("/mnt/secrets/DB_PASSWORD")
+)
+DB_HOST = os.getenv("DB_HOST") or read_secret_file("/mnt/secrets/DB_HOST")
+DB_PORT = os.getenv("DB_PORT") or read_secret_file("/mnt/secrets/DB_PORT")
+
+if DB_NAME and DB_USER and DB_PASSWORD and DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+            "HOST": DB_HOST,
+            "PORT": DB_PORT,
+        }
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
