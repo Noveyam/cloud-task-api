@@ -7,14 +7,11 @@ metadata:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:766158721264:certificate/d29a2166-4d10-435a-82ea-ae203403e2ce
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 spec:
   ingressClassName: alb
   rules:
-  - host: api.noveycloud.com
-    http:
+   - http:
       paths:
       - path: /
         pathType: Prefix
