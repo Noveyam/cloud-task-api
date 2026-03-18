@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: cloud-task-api-config
 data:
-  DJANGO_ALLOWED_HOSTS: "127.0.0.1, localhost, *" #Update elb when starting Terraform
+  DJANGO_ALLOWED_HOSTS: "api.noveycloud.com,noveycloud.com,www.noveycloud.com"
   DJANGO_DEBUG: "False"
