@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-task-api-config
+  namespace: staging
+data:
+  DJANGO_ALLOWED_HOSTS: "staging-api.noveycloud.com"
+  DJANGO_DEBUG: "False"

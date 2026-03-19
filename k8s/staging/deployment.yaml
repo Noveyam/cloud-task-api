@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-task-api
+  namespace: staging
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: cloud-task-api
+  template:
+    metadata:
+      labels:
+        app: cloud-task-api
+    spec:
+      serviceAccountName: cloud-task-api-sa
+
+      containers:
+        - name: api
+          image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:4c1e056634b31dac22d55cc738eb112eb9994a5e
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: staging-api.noveycloud.com
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: staging-api.noveycloud.com
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 6
+          envFrom:
+            - configMapRef:
+                name: cloud-task-api-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets"
+              readOnly: true
+
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "cloud-task-api-secrets"
