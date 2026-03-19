@@ -25,6 +25,16 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: api.noveycloud.com
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /health/
@@ -35,16 +45,6 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 5
             failureThreshold: 6
-          livenessProbe:
-            httpGet:
-              path: /health/
-              port: 8000
-              httpHeaders:
-                - name: Host
-                  value: localhost
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 5
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config
