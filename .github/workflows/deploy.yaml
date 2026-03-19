@@ -95,6 +95,10 @@ jobs:
           kubectl rollout status deployment/$DEPLOYMENT_NAME \
           -n $K8S_NAMESPACE \
           --timeout=300s
+
+      - name: Run migrations
+        run: |
+          kubectl exec -n $K8S_NAMESPACE deploy/$DEPLOYMENT_NAME -- python manage.py migrate
       
       - name: Verify health endpoint
         run: |
