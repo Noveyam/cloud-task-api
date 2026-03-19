@@ -86,7 +86,7 @@ jobs:
             --retry 20 \
             --retry-delay 10 \
             --retry-connrefused \
-            http://api.noveycloud.com/health/    
+            https://api.noveycloud.com/health/    
       
       - name: Debug on failure
         if: failure()
