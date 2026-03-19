@@ -31,7 +31,7 @@ spec:
               port: 8000
               httpHeaders:
                 - name: Host
-                  value: localhost
+                  value: api.noveycloud.com
             initialDelaySeconds: 15
             periodSeconds: 5
             failureThreshold: 6
