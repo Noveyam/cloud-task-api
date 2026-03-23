@@ -25,11 +25,13 @@ jobs:
 
       - name: Run Django checks
         env:
-          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost"
-          DJANGO_SECRET_KEY: "ci-secret-key"
+          DJANGO_SETTINGS_MODULE: config.settings
+          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
+          SECRET_KEY: "ci-secret-key"
+          DEBUG: "False"
+          ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py check
-          python manage.py migrate
           python manage.py test
 
       - name: Build Docker image
