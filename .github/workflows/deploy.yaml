@@ -109,7 +109,7 @@ jobs:
             $HEALTHCHECK_URL    
       
       - name: Debug on failure
-        if: failure()
+        if: failure() 
         run: |
           kubectl get pods -n $K8S_NAMESPACE -o wide
           kubectl describe deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE

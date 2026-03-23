@@ -11,11 +11,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
-
+import sys
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
@@ -44,19 +44,28 @@ DB_PASSWORD = os.getenv("DB_PASSWORD") or read_secret_file("/mnt/secrets/DB_PASS
 DB_HOST = os.getenv("DB_HOST") or read_secret_file("/mnt/secrets/DB_HOST")
 DB_PORT = os.getenv("DB_PORT") or read_secret_file("/mnt/secrets/DB_PORT") or "5432"
 
-if not (DB_NAME and DB_USER and DB_PASSWORD and DB_HOST):
-    raise RuntimeError("Database configuration missing — refusing to start")
+RUNNING_TESTS = "test" in sys.argv
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": DB_NAME,
-        "USER": DB_USER,
-        "PASSWORD": DB_PASSWORD,
-        "HOST": DB_HOST,
-        "PORT": DB_PORT,
+if DB_NAME and DB_USER and DB_PASSWORD and DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+            "HOST": DB_HOST,
+            "PORT": DB_PORT,
+        }
     }
-}
+elif RUNNING_TESTS:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    raise RuntimeError("Database configuration missing — refusing to start")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
