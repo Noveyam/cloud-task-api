@@ -47,6 +47,7 @@ jobs:
           SECRET_KEY: test-secret-key
           DEBUG: "False"
           DJANGO_ALLOWED_HOSTS: localhost, 127.0.0.1, testserver
+          ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py test
 
