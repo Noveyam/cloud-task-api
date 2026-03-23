@@ -101,19 +101,13 @@ jobs:
         run: |
           kubectl delete job cloud-task-api-migrate -n $K8S_NAMESPACE --ignore-not-found=true
 
-      - name: Apply migration job
+      - name: Apply migration job with current image
         run: |
           if [ "$K8S_NAMESPACE" = "staging" ]; then
-            kubectl apply -f k8s/staging/migrate-job.yaml
+            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/staging/migrate-job.yaml | kubectl apply -f -
           else
-            kubectl apply -f k8s/migrate-job.yaml
+            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/migrate-job.yaml | kubectl apply -f -
           fi
-
-      - name: Set migration job image
-        run: |
-          kubectl set image job/cloud-task-api-migrate \
-            migrate=$IMAGE_URI \
-            -n $K8S_NAMESPACE
 
       - name: Wait for migration job
         run: |

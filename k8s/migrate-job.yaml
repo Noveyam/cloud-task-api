@@ -15,7 +15,7 @@ spec:
       serviceAccountName: cloud-task-api-sa
       containers:
         - name: migrate
-          image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:latest
+          image: IMAGE_URI_PLACEHOLDER
           imagePullPolicy: Always
           command: ["python", "manage.py", "migrate", "--noinput"]
           envFrom:
