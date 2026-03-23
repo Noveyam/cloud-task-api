@@ -20,6 +20,7 @@ env:
   DEPLOYMENT_NAME: cloud-task-api
   CONTAINER_NAME: api
   HEALTHCHECK_URL: https://api.noveycloud.com/health/
+  ALLOW_SQLITE_FOR_CI: "True"
 
 jobs:
   deploy:
@@ -81,6 +82,7 @@ jobs:
           echo "IMAGE_URI=$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Update kubeconfig for EKS
+        id: kubeconfig
         run: |
           aws eks update-kubeconfig \
             --region $AWS_REGION \
@@ -120,7 +122,7 @@ jobs:
             $HEALTHCHECK_URL    
       
       - name: Debug on failure
-        if: failure() 
+        if: failure() && steps.kubeconfig.outcome == 'success'
         run: |
           kubectl get pods -n $K8S_NAMESPACE -o wide
           kubectl describe deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE
