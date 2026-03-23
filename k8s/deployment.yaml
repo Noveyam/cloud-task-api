@@ -14,6 +14,8 @@ spec:
       app: cloud-task-api
   template:
     metadata:
+      name: cloud-task-api
+      namespace: default
       labels:
         app: cloud-task-api
     spec:
@@ -34,6 +36,7 @@ spec:
                   value: api.noveycloud.com
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 2
             failureThreshold: 5
           readinessProbe:
             httpGet:
@@ -44,12 +47,11 @@ spec:
                   value: api.noveycloud.com
             initialDelaySeconds: 15
             periodSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 6
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config
-            - secretRef:
-                name: cloud-task-api-secret
           resources:
             requests:
               memory: "128Mi"
