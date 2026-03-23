@@ -41,6 +41,16 @@ jobs:
             pip install -r requirements.txt
           fi
 
+      - name: Run Django checks
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          SECRET_KEY: test-secret-key
+          DEBUG: "False"
+          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+          ALLOW_SQLITE_FOR_CI: "True"
+        run: |
+          python manage.py check
+
       - name: Run tests
         env:
           DJANGO_SETTINGS_MODULE: config.settings

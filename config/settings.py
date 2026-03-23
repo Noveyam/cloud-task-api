@@ -45,7 +45,6 @@ DB_HOST = os.getenv("DB_HOST") or read_secret_file("/mnt/secrets/DB_HOST")
 DB_PORT = os.getenv("DB_PORT") or read_secret_file("/mnt/secrets/DB_PORT") or "5432"
 
 ALLOW_SQLITE_FOR_CI = os.getenv("ALLOW_SQLITE_FOR_CI", "False").lower() in ("true", "1", "yes")
-RUNNING_CI_SAFE_COMMAND = any(cmd in sys.argv for cmd in ["test", "check"])
 
 if DB_NAME and DB_USER and DB_PASSWORD and DB_HOST:
     DATABASES = {
@@ -58,7 +57,7 @@ if DB_NAME and DB_USER and DB_PASSWORD and DB_HOST:
             "PORT": DB_PORT,
         }
     }
-elif ALLOW_SQLITE_FOR_CI or RUNNING_CI_SAFE_COMMAND:
+elif ALLOW_SQLITE_FOR_CI:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
