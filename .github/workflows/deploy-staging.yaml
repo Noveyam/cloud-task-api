@@ -1,29 +1,29 @@
-name: Deploy
+name: Deploy Staging
 
 on:
   push:
-    branches: [main]
+    branches:
+      - develop
 
 permissions:
   id-token: write
   contents: read
 
 concurrency:
-  group: deploy-main
+  group: deploy-staging
   cancel-in-progress: true
 
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: cloud-task-api
   EKS_CLUSTER_NAME: cloud-task-api-eks
-  K8S_NAMESPACE: default
+  K8S_NAMESPACE: staging
   DEPLOYMENT_NAME: cloud-task-api
   CONTAINER_NAME: api
-  HEALTHCHECK_URL: https://api.noveycloud.com/health/
-  ALLOW_SQLITE_FOR_CI: "True"
+  HEALTHCHECK_URL: https://staging-api.noveycloud.com/health/
 
 jobs:
-  deploy:
+  deploy-staging:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,16 +38,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
+          pip install -r requirements.txt
 
       - name: Run Django checks
         env:
           DJANGO_SETTINGS_MODULE: config.settings
-          SECRET_KEY: test-secret-key
+          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
+          SECRET_KEY: "ci-secret-key"
           DEBUG: "False"
-          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
           ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py check
@@ -55,9 +53,9 @@ jobs:
       - name: Run tests
         env:
           DJANGO_SETTINGS_MODULE: config.settings
-          SECRET_KEY: test-secret-key
+          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
+          SECRET_KEY: "ci-secret-key"
           DEBUG: "False"
-          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
           ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py test
@@ -93,37 +91,29 @@ jobs:
           kubectl config current-context
           kubectl get nodes
 
-      - name: Apply Kubernetes manifests
+      - name: Apply staging manifests
         run: |
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/serviceaccount.yaml
-          kubectl apply -f k8s/secretproviderclass.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/hpa.yaml
-          kubectl apply -f k8s/ingress.yaml
+          kubectl apply -f k8s/staging/configmap.yaml
+          kubectl apply -f k8s/staging/serviceaccount.yaml
+          kubectl apply -f k8s/staging/secretproviderclass.yaml
+          kubectl apply -f k8s/staging/service.yaml
+          kubectl apply -f k8s/staging/deployment.yaml
+          kubectl apply -f k8s/staging/hpa.yaml
+          kubectl apply -f k8s/staging/ingress.yaml
 
-      - name: Set release version
+      - name: Inject release version into staging deployment
         run: |
-          kubectl set env deployment/cloud-task-api \
-          RELEASE_VERSION=${{ github.sha }} \
-          -n $K8S_NAMESPACE
-
-      - name: Inject release version
-        run: |
-          sed -i "s/GIT_SHA_PLACEHOLDER/${{ github.sha }}/g" k8s/deployment.yaml
+          kubectl set env deployment/$DEPLOYMENT_NAME \
+            RELEASE_VERSION=${{ github.sha }} \
+            -n $K8S_NAMESPACE
 
       - name: Delete old migration job if it exists
         run: |
           kubectl delete job cloud-task-api-migrate -n $K8S_NAMESPACE --ignore-not-found=true
 
-      - name: Apply migration job with current image
+      - name: Apply staging migration job with current image
         run: |
-          if [ "$K8S_NAMESPACE" = "staging" ]; then
-            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/staging/jobs/migrate-job.yaml | kubectl apply -f -
-          else
-            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/jobs/migrate-job.yaml | kubectl apply -f -
-          fi
+          sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/staging/jobs/migrate-job.yaml | kubectl apply -f -
 
       - name: Wait for migration job
         run: |
@@ -144,7 +134,7 @@ jobs:
         run: |
           kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
 
-      - name: Deploy new image
+      - name: Deploy new staging image
         run: |
           kubectl set image deployment/$DEPLOYMENT_NAME \
             $CONTAINER_NAME=$IMAGE_URI \
@@ -156,7 +146,7 @@ jobs:
             -n $K8S_NAMESPACE \
             --timeout=300s
 
-      - name: Verify health endpoint
+      - name: Verify staging health endpoint
         run: |
           curl --fail --silent --show-error \
             --retry 20 \
@@ -172,4 +162,4 @@ jobs:
           kubectl describe job/cloud-task-api-migrate -n $K8S_NAMESPACE || true
           kubectl describe pod -n $K8S_NAMESPACE -l app=$DEPLOYMENT_NAME || true
           kubectl logs -n $K8S_NAMESPACE -l app=$DEPLOYMENT_NAME --tail=200 || true
-          kubectl logs job/cloud-task-api-migrate -n $K8S_NAMESPACE || true
+          kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
