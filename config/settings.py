@@ -94,6 +94,13 @@ DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
 
+# allow internal cluster traffic safely
+ALLOWED_HOSTS += [
+    "127.0.0.1",
+    "localhost",
+    ".cluster.local",
+]
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
