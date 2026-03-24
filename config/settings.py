@@ -15,19 +15,6 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 import sys
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "config.middleware.RequestLogMiddleware",
-]
 
 try:
     import sentry_sdk
@@ -69,8 +56,8 @@ if sentry_sdk and SENTRY_DSN:
         traces_sample_rate=0.1,
         profiles_sample_rate=0.1,
         send_default_pii=False,
-        environment=os.getenv("SENTRY_ENVIRONMENT", "production"),
-        release=os.getenv("RELEASE_VERSION"),
+        environment=SENTRY_ENVIRONMENT,
+        release=RELEASE_VERSION,
     )
 
 # DATABASE
@@ -91,6 +78,8 @@ if DB_NAME and DB_USER and DB_PASSWORD and DB_HOST:
             "PASSWORD": DB_PASSWORD,
             "HOST": DB_HOST,
             "PORT": DB_PORT,
+            "CONN_MAX_AGE": 60,
+            "CONN_HEALTH_CHECKS": True,
         }
     }
 elif ALLOW_SQLITE_FOR_CI:
@@ -151,6 +140,17 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
 }
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    "config.middleware.RequestLogMiddleware",
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -240,6 +240,11 @@ LOGGING = {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": True,
+        },
+        "request": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
     "root": {
