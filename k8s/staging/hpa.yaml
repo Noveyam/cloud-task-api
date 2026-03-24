@@ -4,8 +4,6 @@ metadata:
   name: cloud-task-api
   namespace: staging
 spec:
-  replicas: 1
-  minReadySeconds: 15
   strategy:
     type: RollingUpdate
     rollingUpdate:

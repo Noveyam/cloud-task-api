@@ -6,3 +6,4 @@ metadata:
 data:
   DJANGO_ALLOWED_HOSTS: "staging-api.noveycloud.com, localhost, 127.0.0.1"
   DJANGO_DEBUG: "False"
+  SENTRY_ENVIRONMENT: "staging"

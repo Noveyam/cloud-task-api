@@ -4,13 +4,6 @@ metadata:
   name: cloud-task-api
   namespace: default
 spec:
-  replicas: 2
-  minReadySeconds: 15
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
