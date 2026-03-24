@@ -1,0 +1,172 @@
+name: Deploy Prod
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: cloud-task-api
+  EKS_CLUSTER_NAME: cloud-task-api-eks
+  K8S_NAMESPACE: default
+  DEPLOYMENT_NAME: cloud-task-api
+  CONTAINER_NAME: api
+  HEALTHCHECK_URL: https://api.noveycloud.com/health/
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Django checks
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
+          SECRET_KEY: "ci-secret-key"
+          DEBUG: "False"
+          ALLOW_SQLITE_FOR_CI: "True"
+        run: |
+          python manage.py check
+
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
+          SECRET_KEY: "ci-secret-key"
+          DEBUG: "False"
+          ALLOW_SQLITE_FOR_CI: "True"
+        run: |
+          python manage.py test
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "IMAGE_URI=$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Update kubeconfig for EKS
+        id: kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name $EKS_CLUSTER_NAME
+
+      - name: Verify cluster access
+        run: |
+          kubectl config current-context
+          kubectl get nodes
+
+      - name: Apply prod manifests
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/serviceaccount.yaml
+          kubectl apply -f k8s/secretproviderclass.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/hpa.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Inject release version into prod deployment
+        run: |
+          kubectl set env deployment/$DEPLOYMENT_NAME \
+            RELEASE_VERSION=${{ github.sha }} \
+            -n $K8S_NAMESPACE
+
+      - name: Delete old migration job if it exists
+        run: |
+          kubectl delete job cloud-task-api-migrate -n $K8S_NAMESPACE --ignore-not-found=true
+
+      - name: Apply prod migration job with current image
+        run: |
+          sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/jobs/migrate-job.yaml | kubectl apply -f -
+
+      - name: Wait for migration job
+        run: |
+          if ! kubectl wait --for=condition=complete job/cloud-task-api-migrate \
+            -n $K8S_NAMESPACE \
+            --timeout=300s; then
+            echo "Migration job did not complete in time"
+            kubectl get job cloud-task-api-migrate -n $K8S_NAMESPACE || true
+            kubectl describe job cloud-task-api-migrate -n $K8S_NAMESPACE || true
+            kubectl get pods -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate || true
+            kubectl describe pod -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate || true
+            kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
+            exit 1
+          fi
+
+      - name: Show migration logs
+        if: always()
+        run: |
+          kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
+
+      - name: Deploy new prod image
+        run: |
+          kubectl set image deployment/$DEPLOYMENT_NAME \
+            $CONTAINER_NAME=$IMAGE_URI \
+            -n $K8S_NAMESPACE
+
+      - name: Wait for rollout
+        id: rollout
+        run: |
+          kubectl rollout status deployment/$DEPLOYMENT_NAME \
+            -n $K8S_NAMESPACE \
+            --timeout=300s
+
+      - name: Verify prod health endpoint
+        run: |
+          curl --fail --silent --show-error \
+            --retry 20 \
+            --retry-delay 10 \
+            --retry-connrefused \
+            $HEALTHCHECK_URL
+
+      - name: Roll back on failure
+        if: failure() && steps.kubeconfig.outcome == 'success'
+        run: |
+          kubectl rollout undo deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE || true
+          kubectl rollout status deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE --timeout=300s || true
+
+      - name: Debug on failure
+        if: failure() && steps.kubeconfig.outcome == 'success'
+        run: |
+          kubectl get pods -n $K8S_NAMESPACE -o wide
+          kubectl describe deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE
+          kubectl describe job/cloud-task-api-migrate -n $K8S_NAMESPACE || true
+          kubectl describe pod -n $K8S_NAMESPACE -l app=$DEPLOYMENT_NAME || true
+          kubectl logs -n $K8S_NAMESPACE -l app=$DEPLOYMENT_NAME --tail=200 || true
+          kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true

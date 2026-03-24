@@ -3,7 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
 
 jobs:
   test-and-build:
@@ -11,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -32,6 +34,15 @@ jobs:
           ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py check
+      
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
+          SECRET_KEY: "ci-secret-key"
+          DEBUG: "False"
+          ALLOW_SQLITE_FOR_CI: "True"
+        run: |
           python manage.py test
 
       - name: Build Docker image
