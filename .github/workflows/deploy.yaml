@@ -117,14 +117,22 @@ jobs:
 
       - name: Wait for migration job
         run: |
-          kubectl wait --for=condition=complete job/cloud-task-api-migrate \
+          if ! kubectl wait --for=condition=complete job/cloud-task-api-migrate \
             -n $K8S_NAMESPACE \
-            --timeout=300s
+            --timeout=300s; then
+            echo "Migration job did not complete in time"
+            kubectl get job cloud-task-api-migrate -n $K8S_NAMESPACE || true
+            kubectl describe job cloud-task-api-migrate -n $K8S_NAMESPACE || true
+            kubectl get pods -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate || true
+            kubectl describe pod -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate || true
+            kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
+            exit 1
+          fi
 
       - name: Show migration logs
         if: always()
         run: |
-          kubectl logs job/cloud-task-api-migrate -n $K8S_NAMESPACE || true
+          kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
 
       - name: Deploy new image
         run: |
