@@ -15,8 +15,6 @@ spec:
       app: cloud-task-api
   template:
     metadata:
-      name: cloud-task-api
-      namespace: default
       labels:
         app: cloud-task-api
     spec:
