@@ -95,7 +95,13 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f k8s/
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/serviceaccount.yaml
+          kubectl apply -f k8s/secretproviderclass.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/hpa.yaml
+          kubectl apply -f k8s/ingress.yaml
 
       - name: Delete old migration job if it exists
         run: |
@@ -104,9 +110,9 @@ jobs:
       - name: Apply migration job with current image
         run: |
           if [ "$K8S_NAMESPACE" = "staging" ]; then
-            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/staging/migrate-job.yaml | kubectl apply -f -
+            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/staging/jobs/migrate-job.yaml | kubectl apply -f -
           else
-            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/migrate-job.yaml | kubectl apply -f -
+            sed "s|IMAGE_URI_PLACEHOLDER|$IMAGE_URI|g" k8s/jobs/migrate-job.yaml | kubectl apply -f -
           fi
 
       - name: Wait for migration job
