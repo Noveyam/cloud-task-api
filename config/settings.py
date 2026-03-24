@@ -246,6 +246,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "django.security.DisallowedHost": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
     "root": {
         "handlers": ["console"],
