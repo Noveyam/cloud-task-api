@@ -64,7 +64,6 @@ spec:
             - name: secrets-store
               mountPath: "/mnt/secrets"
               readOnly: true
-      
       volumes:
           - name: secrets-store
             csi:
