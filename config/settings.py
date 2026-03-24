@@ -25,7 +25,7 @@ load_dotenv(BASE_DIR / ".env")
 
 SENTRY_DSN = os.getenv("SENTRY_DSN") or read_secret_file("/mnt/secrets/SENTRY_DSN")
 
-if SENTRY_DSN:
+if sentry_sdk and SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
