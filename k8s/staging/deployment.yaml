@@ -51,11 +51,11 @@ spec:
                 name: cloud-task-api-config
           resources:
             requests:
-              memory: "128Mi"
+              memory: "96Mi"
               cpu: "25m"
             limits:
               memory: "256Mi"
-              cpu: "500m"
+              cpu: "250m"
           volumeMounts:
             - name: secrets-store
               mountPath: "/mnt/secrets"
