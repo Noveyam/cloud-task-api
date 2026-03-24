@@ -47,6 +47,9 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 5
             failureThreshold: 6
+          env:
+            - name: RELEASE_VERSION
+              value: "GIT_SHA_PLACEHOLDER"
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config

@@ -48,6 +48,8 @@ SECRET_KEY = (
 )
 
 SENTRY_DSN = os.getenv("SENTRY_DSN") or read_secret_file("/mnt/secrets/SENTRY_DSN")
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "production")
+RELEASE_VERSION = os.getenv("RELEASE_VERSION")
 
 if sentry_sdk and SENTRY_DSN:
     sentry_sdk.init(
@@ -59,6 +61,7 @@ if sentry_sdk and SENTRY_DSN:
         environment=os.getenv("SENTRY_ENVIRONMENT", "production"),
         release=os.getenv("RELEASE_VERSION"),
     )
+
 # DATABASE
 DB_NAME = os.getenv("DB_NAME") or read_secret_file("/mnt/secrets/DB_NAME")
 DB_USER = os.getenv("DB_USER") or read_secret_file("/mnt/secrets/DB_USER")

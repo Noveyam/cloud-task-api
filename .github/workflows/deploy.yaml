@@ -103,6 +103,16 @@ jobs:
           kubectl apply -f k8s/hpa.yaml
           kubectl apply -f k8s/ingress.yaml
 
+      - name: Set release version
+        run: |
+          kubectl set env deployment/cloud-task-api \
+          RELEASE_VERSION=${{ github.sha }} \
+          -n $K8S_NAMESPACE
+
+      - name: Inject release version
+        run: |
+          sed -i "s/GIT_SHA_PLACEHOLDER/${{ github.sha }}/g" k8s/deployment.yaml
+
       - name: Delete old migration job if it exists
         run: |
           kubectl delete job cloud-task-api-migrate -n $K8S_NAMESPACE --ignore-not-found=true
