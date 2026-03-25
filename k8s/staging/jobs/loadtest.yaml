@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cloud-task-api-loadtest
+  namespace: staging
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: loadtest
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              i=0
+              while [ $i -lt 1000 ]; do
+                wget --header='Host: staging-api.noveycloud.com' -q -O- http://cloud-task-api-service/health/
+                i=$((i+1))
+              done
