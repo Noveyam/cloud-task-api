@@ -134,6 +134,48 @@ jobs:
         run: |
           kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
 
+      - name: Migration smoke check
+        run: |
+            kubectl run migration-smoke-check \
+              -n $K8S_NAMESPACE \
+              --rm -i --restart=Never \
+              --image=$IMAGE_URI \
+              --overrides='
+              {
+                "spec": {
+                  "serviceAccountName": "cloud-task-api-sa",
+                  "containers": [
+                    {
+                      "name": "check",
+                      "image": "'"$IMAGE_URI"'",
+                      "command": ["python", "manage.py", "showmigrations"],
+                      "envFrom": [
+                        { "configMapRef": { "name": "cloud-task-api-config" } }
+                      ],
+                      "volumeMounts": [
+                        {
+                          "name": "secrets-store",
+                          "mountPath": "/mnt/secrets",
+                          "readOnly": true
+                        }
+                      ]
+                    }
+                  ],
+                  "volumes": [
+                    {
+                      "name": "secrets-store",
+                      "csi": {
+                        "driver": "secrets-store.csi.k8s.io",
+                        "readOnly": true,
+                        "volumeAttributes": {
+                          "secretProviderClass": "cloud-task-api-secrets"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }'
+
       - name: Deploy new prod image
         run: |
           kubectl set image deployment/$DEPLOYMENT_NAME \
