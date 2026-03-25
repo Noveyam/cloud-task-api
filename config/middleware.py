@@ -1,5 +1,7 @@
+import json
 import logging
 import time
+import uuid
 
 logger = logging.getLogger("request")
 
@@ -12,16 +14,15 @@ class RequestLogMiddleware:
         start = time.perf_counter()
 
         request_id = (
-            request.headers.get("x-request-id") 
+            request.headers.get("X-Request-ID")
             or request.META.get("HTTP_X_REQUEST_ID")
             or str(uuid.uuid4())
         )
-
         request.request_id = request_id
 
         response = self.get_response(request)
 
-        duratiom_ms = round((time.perf_counter() - start) * 1000, 2)
+        duration_ms = round((time.perf_counter() - start) * 1000, 2)
 
         forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
         if forwarded_for:
@@ -29,23 +30,21 @@ class RequestLogMiddleware:
         else:
             client_ip = request.META.get("REMOTE_ADDR")
 
-        user_id: Any = None
+        user_id = None
         user = getattr(request, "user", None)
         if user is not None and getattr(user, "is_authenticated", False):
             user_id = getattr(user, "id", None)
 
-        log_payload = {
+        logger.info(json.dumps({
             "event": "request",
             "request_id": request_id,
             "method": request.method,
             "path": request.path,
             "status_code": getattr(response, "status_code", 500),
-            "duration_ms": duratiom_ms,
-            "user_id": user_id,
+            "duration_ms": duration_ms,
             "client_ip": client_ip,
-        }
-
-        logger.info(json.dumps(log_payload))
+            "user_id": user_id,
+        }))
 
         response["X-Request-ID"] = request_id
         return response
