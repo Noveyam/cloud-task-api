@@ -136,45 +136,45 @@ jobs:
 
       - name: Migration smoke check
         run: |
-            kubectl run migration-smoke-check \
-              -n $K8S_NAMESPACE \
-              --rm -i --restart=Never \
-              --image=$IMAGE_URI \
-              --overrides='
-              {
-                "spec": {
-                  "serviceAccountName": "cloud-task-api-sa",
-                  "containers": [
-                    {
-                      "name": "check",
-                      "image": "'"$IMAGE_URI"'",
-                      "command": ["python", "manage.py", "showmigrations"],
-                      "envFrom": [
-                        { "configMapRef": { "name": "cloud-task-api-config" } }
-                      ],
-                      "volumeMounts": [
-                        {
-                          "name": "secrets-store",
-                          "mountPath": "/mnt/secrets",
-                          "readOnly": true
-                        }
-                      ]
-                    }
-                  ],
-                  "volumes": [
-                    {
-                      "name": "secrets-store",
-                      "csi": {
-                        "driver": "secrets-store.csi.k8s.io",
-                        "readOnly": true,
-                        "volumeAttributes": {
-                          "secretProviderClass": "cloud-task-api-secrets"
-                        }
+          kubectl run migration-smoke-check \
+            -n $K8S_NAMESPACE \
+            --rm -i --restart=Never \
+            --image=$IMAGE_URI \
+            --overrides='
+            {
+              "spec": {
+                "serviceAccountName": "cloud-task-api-sa",
+                "containers": [
+                  {
+                    "name": "check",
+                    "image": "'"$IMAGE_URI"'",
+                    "command": ["python", "manage.py", "showmigrations"],
+                    "envFrom": [
+                      { "configMapRef": { "name": "cloud-task-api-config" } }
+                    ],
+                    "volumeMounts": [
+                      {
+                        "name": "secrets-store",
+                        "mountPath": "/mnt/secrets",
+                        "readOnly": true
+                      }
+                    ]
+                  }
+                ],
+                "volumes": [
+                  {
+                    "name": "secrets-store",
+                    "csi": {
+                      "driver": "secrets-store.csi.k8s.io",
+                      "readOnly": true,
+                      "volumeAttributes": {
+                        "secretProviderClass": "cloud-task-api-secrets"
                       }
                     }
-                  ]
-                }
-              }'
+                  }
+                ]
+              }
+            }'
 
       - name: Deploy new prod image
         run: |
@@ -197,11 +197,13 @@ jobs:
             --retry-connrefused \
             $HEALTHCHECK_URL
 
-      - name: Roll back on failure
-        if: failure() && steps.kubeconfig.outcome == 'success'
+      - name: Roll back on failed rollout
+        if: failure() && steps.rollout.outcome == 'failure'
         run: |
-          kubectl rollout undo deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE || true
-          kubectl rollout status deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE --timeout=300s || true
+          echo "Deployment rollout failed — rolling back"
+          kubectl rollout undo deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE
+          kubectl rollout history deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE || true
+          kubectl rollout status deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE --timeout=300s
 
       - name: Debug on failure
         if: failure() && steps.kubeconfig.outcome == 'success'
