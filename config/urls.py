@@ -18,7 +18,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
-from tasks.views import sentry_test_error
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
