@@ -45,6 +45,8 @@ SECRET_KEY = (
     or "unsafe-dev-key"
 )
 
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+
 SENTRY_DSN = os.getenv("SENTRY_DSN") or read_secret_file("/mnt/secrets/SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "production")
 RELEASE_VERSION = os.getenv("RELEASE_VERSION")
@@ -94,7 +96,6 @@ else:
     raise RuntimeError("Database configuration missing — refusing to start")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
 
