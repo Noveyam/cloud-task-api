@@ -40,8 +40,3 @@ def health_check(request):
         {"status": "ok"},
         status=status.HTTP_200_OK
     )
-
-
-def sentry_test_error(request):
-    division_by_zero = 1 / 0
-    return HttpResponse("This will never run")
