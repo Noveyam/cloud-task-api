@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import sys
 import socket
+from django.core.exceptions import DisallowedHost
 
 try:
     import sentry_sdk
@@ -61,6 +62,7 @@ if sentry_sdk and SENTRY_DSN and not DEBUG:
         send_default_pii=False,
         environment=SENTRY_ENVIRONMENT,
         release=RELEASE_VERSION,
+        ignore_errors=[DisallowedHost],
     )
 
 # DATABASE
