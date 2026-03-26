@@ -51,7 +51,7 @@ SENTRY_DSN = os.getenv("SENTRY_DSN") or read_secret_file("/mnt/secrets/SENTRY_DS
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "production")
 RELEASE_VERSION = os.getenv("RELEASE_VERSION")
 
-if sentry_sdk and SENTRY_DSN:
+if sentry_sdk and SENTRY_DSN and not DEBUG:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
@@ -60,7 +60,6 @@ if sentry_sdk and SENTRY_DSN:
         send_default_pii=False,
         environment=SENTRY_ENVIRONMENT,
         release=RELEASE_VERSION,
-        enabled=not DEBUG,
     )
 
 # DATABASE
