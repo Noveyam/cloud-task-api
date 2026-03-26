@@ -11,6 +11,8 @@ from .permissions import IsOwner
 from .models import Task
 from .serializers import TaskSerializer
 
+from django.http import HttpResponse
+
 class TaskListCreateView(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
@@ -38,3 +40,8 @@ def health_check(request):
         {"status": "ok"},
         status=status.HTTP_200_OK
     )
+
+
+def sentry_test_error(request):
+    division_by_zero = 1 / 0
+    return HttpResponse("This will never run")

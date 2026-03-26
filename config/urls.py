@@ -18,11 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
-
+from tasks.views import sentry_test_error
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
-
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -30,4 +29,5 @@ urlpatterns = [
     path("", include("users.urls")),
     path("", include("tasks.urls")),
     path("", lambda request: JsonResponse({"message": "Cloud Task API"}), name="root"),
+    path("sentry-test/", sentry_test_error),
 ]
