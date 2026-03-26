@@ -58,6 +58,7 @@ if sentry_sdk and SENTRY_DSN:
         send_default_pii=False,
         environment=SENTRY_ENVIRONMENT,
         release=RELEASE_VERSION,
+        enabled=not DEBUG,
     )
 
 # DATABASE
