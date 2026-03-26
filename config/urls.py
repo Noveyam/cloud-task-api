@@ -29,5 +29,4 @@ urlpatterns = [
     path("", include("users.urls")),
     path("", include("tasks.urls")),
     path("", lambda request: JsonResponse({"message": "Cloud Task API"}), name="root"),
-    path("sentry-test/", sentry_test_error),
 ]

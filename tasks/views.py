@@ -40,6 +40,3 @@ def health_check(request):
         {"status": "ok"},
         status=status.HTTP_200_OK
     )
-
-def sentry_test_error(request):
-    raise Exception("Sentry test event")
