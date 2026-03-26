@@ -50,6 +50,8 @@ spec:
           env:
             - name: RELEASE_VERSION
               value: "GIT_SHA_PLACEHOLDER"
+            - name: SENTRY_ENVIRONMENT
+              value: "production"
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config
@@ -65,9 +67,9 @@ spec:
               mountPath: "/mnt/secrets"
               readOnly: true
       volumes:
-          - name: secrets-store
-            csi:
-              driver: secrets-store.csi.k8s.io
-              readOnly: true
-              volumeAttributes:
-                secretProviderClass: "cloud-task-api-secrets"
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "cloud-task-api-secrets"
