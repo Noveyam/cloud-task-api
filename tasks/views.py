@@ -12,6 +12,7 @@ from .models import Task
 from .serializers import TaskSerializer
 
 from django.http import HttpResponse
+from django.conf import settings
 
 class TaskListCreateView(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
@@ -29,6 +30,12 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Task.objects.filter(owner=self.request.user)
+
+def alarm_test_500(request):
+    if getattr(settings, "SENTRY_ENVIRONMENT", "") != "staging":
+        return HttpResponse(status=404)
+
+    raise Exception("Intentional staging alarm test 500")
 
 logger = logging.getLogger("django")
 
