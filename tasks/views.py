@@ -31,10 +31,17 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Task.objects.filter(owner=self.request.user)
 
+import logging
+from django.conf import settings
+from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
+
 def alarm_test_500(request):
     if getattr(settings, "SENTRY_ENVIRONMENT", "") != "staging":
         return HttpResponse(status=404)
 
+    logger.error("test error log for cloudwatch alarm via HTTP")
     raise Exception("Intentional staging alarm test 500")
 
 logger = logging.getLogger("django")
