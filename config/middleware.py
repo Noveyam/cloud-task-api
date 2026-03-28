@@ -3,13 +3,23 @@ import logging
 import re
 import time
 import uuid
+import ipaddress
 
 logger = logging.getLogger("request")
 
 def is_internal_host(raw_host: str) -> bool:
     if not raw_host:
         return False
-    return bool(re.match(r"^10\.\d+\.\d+\.\d+(?::\d+)?$", raw_host))
+
+    host = raw_host.split(":", 1)[0]
+
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+
+    return ip.is_private
+
 
 class InternalK8sHostRewriteMiddleware:
     """
