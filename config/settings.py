@@ -47,7 +47,7 @@ SECRET_KEY = (
     or "unsafe-dev-key"
 )
 
-DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("true", "1", "yes")
 
 SENTRY_DSN = os.getenv("SENTRY_DSN") or read_secret_file("/mnt/secrets/SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "production")
