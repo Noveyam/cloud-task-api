@@ -2,7 +2,8 @@ import json
 import logging
 import re
 import time
-import ipaddressimport uuid
+import uuid
+import ipaddress
 
 logger = logging.getLogger("request")
 
