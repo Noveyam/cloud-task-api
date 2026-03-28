@@ -4,13 +4,13 @@ metadata:
   name: cloud-task-api
   namespace: staging
 spec:
-  replicas: 2
+  replicas: 1
   minReadySeconds: 15
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 0
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: cloud-task-api
@@ -20,7 +20,15 @@ spec:
         app: cloud-task-api
     spec:
       serviceAccountName: cloud-task-api-sa
-
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: cloud-task-api
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: api
           image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:4c1e056634b31dac22d55cc738eb112eb9994a5e
@@ -36,6 +44,7 @@ spec:
                   value: staging-api.noveycloud.com
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 2
             failureThreshold: 5
           readinessProbe:
             httpGet:
@@ -46,6 +55,7 @@ spec:
                   value: staging-api.noveycloud.com
             initialDelaySeconds: 15
             periodSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 6
           env:
             - name: RELEASE_VERSION

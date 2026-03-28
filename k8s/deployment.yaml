@@ -8,8 +8,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 0
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: cloud-task-api
@@ -19,6 +19,15 @@ spec:
         app: cloud-task-api
     spec:
       serviceAccountName: cloud-task-api-sa
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: cloud-task-api
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: api
           image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:4c1e056634b31dac22d55cc738eb112eb9994a5e
