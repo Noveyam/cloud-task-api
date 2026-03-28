@@ -17,7 +17,6 @@ from datetime import timedelta
 import sys
 import socket
 from django.core.exceptions import DisallowedHost
-import re
 
 try:
     import sentry_sdk
@@ -99,11 +98,6 @@ else:
     raise RuntimeError("Database configuration missing — refusing to start")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-
-def is_internal_host(raw_host: str) -> bool:
-    if not raw_host:
-        return False
-    return bool(re.match(r"^10\.\d+\.\d+\.\d+(?::\d+)?$", raw_host))
 
 ALLOWED_HOSTS = [
     h.strip()

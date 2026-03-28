@@ -1,11 +1,15 @@
 import json
 import logging
+import re
 import time
 import uuid
-from django.conf import settings
-from config.settings import is_internal_host
 
 logger = logging.getLogger("request")
+
+def is_internal_host(raw_host: str) -> bool:
+    if not raw_host:
+        return False
+    return bool(re.match(r"^10\.\d+\.\d+\.\d+(?::\d+)?$", raw_host))
 
 class InternalK8sHostRewriteMiddleware:
     """
@@ -32,29 +36,23 @@ class RequestLogMiddleware:
 
     def __call__(self, request):
         start = time.perf_counter()
-
         request_id = (
             request.headers.get("X-Request-ID")
             or request.META.get("HTTP_X_REQUEST_ID")
             or str(uuid.uuid4())
         )
         request.request_id = request_id
-
         response = self.get_response(request)
-
         duration_ms = round((time.perf_counter() - start) * 1000, 2)
-
         forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
         if forwarded_for:
             client_ip = forwarded_for.split(",")[0].strip()
         else:
             client_ip = request.META.get("REMOTE_ADDR")
-
         user_id = None
         user = getattr(request, "user", None)
         if user is not None and getattr(user, "is_authenticated", False):
             user_id = getattr(user, "id", None)
-
         logger.info(json.dumps({
             "event": "request",
             "request_id": request_id,
