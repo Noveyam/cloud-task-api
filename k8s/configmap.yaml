@@ -6,3 +6,4 @@ data:
   DJANGO_ALLOWED_HOSTS: "api.noveycloud.com, noveycloud.com, www.noveycloud.com, localhost, 127.0.0.1"
   DJANGO_DEBUG: "False"
   SENTRY_ENVIRONMENT: "production"
+  DJANGO_SETTINGS_MODULE: "config.settings"
