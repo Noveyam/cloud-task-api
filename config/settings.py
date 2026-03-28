@@ -47,7 +47,7 @@ SECRET_KEY = (
     or "unsafe-dev-key"
 )
 
-DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("true", "1", "yes")
 
 SENTRY_DSN = os.getenv("SENTRY_DSN") or read_secret_file("/mnt/secrets/SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "production")
@@ -105,19 +105,13 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# Allow internal Kubernetes traffic
 ALLOWED_HOSTS += [
     "127.0.0.1",
     "localhost",
     ".cluster.local",
     ".noveycloud.com",
+    socket.gethostname(),
 ]
-
-# Allow pod hostname (important for internal calls)
-ALLOWED_HOSTS.append(socket.gethostname())
-
-# Allow internal pod IP traffic (safe inside cluster)
-ALLOWED_HOSTS += ["10."]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
@@ -158,6 +152,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "config.middleware.InternalK8sHostRewriteMiddleware",
     "config.middleware.RequestLogMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -263,7 +258,7 @@ LOGGING = {
         },
         "django.security.DisallowedHost": {
             "handlers": ["console"],
-            "level": "ERROR",
+            "level": "WARNING",
             "propagate": False,
         },
     },
