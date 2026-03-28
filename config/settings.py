@@ -17,6 +17,7 @@ from datetime import timedelta
 import sys
 import socket
 from django.core.exceptions import DisallowedHost
+import re
 
 try:
     import sentry_sdk
@@ -99,25 +100,24 @@ else:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
+def is_internal_host(raw_host: str) -> bool:
+    if not raw_host:
+        return False
+    return bool(re.match(r"^10\.\d+\.\d+\.\d+(?::\d+)?$", raw_host))
+
 ALLOWED_HOSTS = [
     h.strip()
     for h in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
     if h.strip()
 ]
 
-# Allow internal Kubernetes traffic
 ALLOWED_HOSTS += [
     "127.0.0.1",
     "localhost",
     ".cluster.local",
     ".noveycloud.com",
+    socket.gethostname(),
 ]
-
-# Allow pod hostname (important for internal calls)
-ALLOWED_HOSTS.append(socket.gethostname())
-
-# Allow internal pod IP traffic (safe inside cluster)
-ALLOWED_HOSTS += ["10."]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
@@ -158,6 +158,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "config.middleware.InternalK8sHostRewriteMiddleware",
     "config.middleware.RequestLogMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -263,7 +264,7 @@ LOGGING = {
         },
         "django.security.DisallowedHost": {
             "handlers": ["console"],
-            "level": "ERROR",
+            "level": "WARNING",
             "propagate": False,
         },
     },

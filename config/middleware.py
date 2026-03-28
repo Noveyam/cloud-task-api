@@ -2,9 +2,29 @@ import json
 import logging
 import time
 import uuid
+from django.conf import settings
+from config.settings import is_internal_host
 
 logger = logging.getLogger("request")
 
+class InternalK8sHostRewriteMiddleware:
+    """
+    Rewrite internal Kubernetes pod IP host headers like 10.x.x.x:8000
+    to localhost before Django host validation runs.
+
+    This keeps public host validation strict while avoiding noisy
+    DisallowedHost errors from internal probes / cluster traffic.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        raw_host = request.META.get("HTTP_HOST", "")
+        if is_internal_host(raw_host):
+            request.META["HTTP_HOST"] = "localhost"
+            request.META["SERVER_NAME"] = "localhost"
+        return self.get_response(request)
 
 class RequestLogMiddleware:
     def __init__(self, get_response):
