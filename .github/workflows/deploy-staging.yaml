@@ -45,7 +45,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings
           DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
           SECRET_KEY: "ci-secret-key"
-          DEBUG: "False"
+          DJANGO_DEBUG: "False"
           ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py check
@@ -55,7 +55,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings
           DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,testserver"
           SECRET_KEY: "ci-secret-key"
-          DEBUG: "False"
+          DJANGO_DEBUG: "False"
           ALLOW_SQLITE_FOR_CI: "True"
         run: |
           python manage.py test
