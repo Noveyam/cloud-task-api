@@ -37,13 +37,6 @@ from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
-def alarm_test_500(request):
-    if getattr(settings, "SENTRY_ENVIRONMENT", "") != "staging":
-        return HttpResponse(status=404)
-
-    logger.error("test error log for cloudwatch alarm via HTTP")
-    raise Exception("Intentional staging alarm test 500")
-
 logger = logging.getLogger("django")
 
 @api_view(["GET"])
