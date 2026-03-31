@@ -1,272 +1,201 @@
-# Cloud Task Management API
+# Cloud-Native Task Management API
+
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![Django](https://img.shields.io/badge/django-rest--api-green)
+![Django](https://img.shields.io/badge/django-rest--framework-green)
 ![Docker](https://img.shields.io/badge/docker-containerized-blue)
-![AWS](https://img.shields.io/badge/aws-ec2-orange)
+![AWS](https://img.shields.io/badge/aws-eks%20%7C%20cloudwatch-orange)
+![Terraform](https://img.shields.io/badge/terraform-infrastructure-purple)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-A cloud‑native Task Management REST API built with Django and Django REST Framework, designed to demonstrate real‑world backend engineering practices including authentication, containerization, infrastructure as code, and Kubernetes deployment on AWS.
+A cloud-native Task Management REST API built with Django and Django REST Framework. This project demonstrates backend API development, JWT authentication, Docker containerization, Terraform-based infrastructure, Kubernetes deployment on AWS, and production-style monitoring with CloudWatch.
 
-This project is intentionally API‑only (no frontend, no templates) and is structured as a portfolio‑ready backend service suitable for production environments.
+## Highlights
 
-⸻
+- REST API built with Django REST Framework
+- JWT authentication for protected routes
+- Per-user task access control
+- Dockerized application for consistent deployment
+- AWS deployment with Kubernetes and Application Load Balancer
+- Terraform-managed infrastructure
+- Health checks and CloudWatch alarm coverage for operational monitoring
 
-Project Goals
-	•	Build a production‑style REST API using Django
-	•	Apply clean architecture and REST best practices
-	•	Deploy a containerized service to AWS using Terraform and Kubernetes
-	•	Demonstrate skills expected of a Cloud / Backend Application Developer
+## Features
 
-⸻
+Authenticated users can:
 
-What This Application Does
+- Register and log in
+- Create tasks
+- List their own tasks
+- Retrieve individual tasks
+- Update tasks
+- Delete tasks
 
-The API allows authenticated users to:
-	•	Register and authenticate using JWT
-	•	Create, update, delete, and list tasks
-	•	Mark tasks as complete or incomplete
-	•	Retrieve only their own tasks
+## Architecture
 
-The service is designed to be:
-	•	Stateless
-	•	Secure
-	•	Easily deployable to cloud infrastructure
+Client  
+→ AWS Application Load Balancer  
+→ Kubernetes Service  
+→ Django API containers on EKS  
+→ Database
 
-⸻
+Monitoring and alerting:
 
-Architecture (Request Flow)
-Client
-   │
-   ▼
-Nginx (Port 80)
-   │
-   ▼
-Uvicorn (Port 8000)
-   │
-   ▼
-Django REST API
-   │
-   ▼
-Database
+Application / Kubernetes / ALB metrics  
+→ Amazon CloudWatch  
+→ Alarm-based alerting
 
-*SSH :22 should be restricted to your IP (x.x.x.x/32)
+## API Endpoints
 
-The application is deployed on an EC2 instance running Amazon Linux. Nginx acts as a reverse proxy on port 80, forwarding traffic to Uvicorn running on localhost:8000. Django REST Framework handles API requests, authentication via JWT, and database operations. Uvicorn is managed by systemd for automatic restarts and background execution. This architecture separates public HTTP handling from application execution, following production deployment best practices.
+### Authentication
 
-⸻
-
-Live Deployment
-
-Public Health Check:
-
-http://18.209.7.86/health/
-
-Example Response:
-
-{"status": "ok"}
-
-⸻
-
-API Endpoints
-
-#Authentication
-
+```http
 POST /auth/register/
 POST /auth/login/
 POST /auth/refresh/
+```
 
-#Tasks
+### Tasks
 
+```http
 GET    /tasks/
 POST   /tasks/
 GET    /tasks/{id}/
 PUT    /tasks/{id}/
 DELETE /tasks/{id}/
+```
 
 All task routes require JWT authentication.
 
-⸻
+## Health Check
 
-Security Design
-
-- Port 8000 is not publicly exposed
-- Only Nginx (port 80) is accessible externally
-- Django ALLOWED_HOSTS enforced
-- JWT authentication protects task routes
-- User-level access control prevents cross-user data access
-- Uvicorn runs as a non-root user
-
-⸻
-
-Containerization
-
-The application is containerized using Docker.
-
-Key container features:
-
-- Multi-stage Docker build
-- Non-root container user
-- Optimized image size
-- Uvicorn ASGI server for production workloads
-
-⸻
-
-Health Check
-
-The API exposes a health endpoint used for monitoring and container orchestration.
-
-Endpoint:
-
+```http
 GET /health/
+```
 
 Example response:
 
-{
-  "status": "ok"
-}
+```json
+{"status":"ok"}
+```
 
-This endpoint can be used by:
+## Tech Stack
 
-- Docker health checks
-- Kubernetes liveness probes
-- Load balancer monitoring
+**Backend**
+- Python
+- Django
+- Django REST Framework
+- JWT Authentication
 
-⸻
+**Infrastructure / DevOps**
+- Docker
+- Terraform
+- Kubernetes
+- AWS EKS
+- AWS Application Load Balancer
+- Amazon CloudWatch
+- ECR / IAM
 
-🛠 Tech Stack
+**Development**
+- SQLite for local development
+- Git / GitHub
+- Linux/macOS CLI tooling
 
-Backend
-	•	Python 3.12
-	•	Django
-	•	Django REST Framework
-	•	JWT Authentication
+## Security
 
-Infrastructure & DevOps
-	•	Docker
-	•	Kubernetes (EKS)
-	•	Terraform
-	•	AWS (ECR, EKS, RDS, IAM)
-	•	GitHub Actions (CI/CD)
+- JWT authentication on protected routes
+- User-level data isolation
+- Non-root container execution
+- Environment-variable based configuration
+- Health endpoint for service validation and monitoring
 
-Development
-	•	SQLite (local development)
-	•	PostgreSQL (production)
-	•	Linux‑based tooling
+## Monitoring
 
-⸻
+CloudWatch alarm coverage includes:
 
-Project Structure
+- ALB healthy targets low
+- ALB unhealthy targets
+- ALB target 5xx responses
+- Application error patterns
+- Pod pending state
+- Container waiting state
+- CPU utilization
+- Memory utilization
+- Latency
+- Cluster pod capacity usage
 
-cloud-task-api/
-├── config/            # Django project configuration
-│   ├── settings.py
-│   ├── urls.py
-│   └── asgi.py
-├── tasks/             # Core application logic
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-├── manage.py
-├── requirements.txt
-├── Dockerfile
-├── .dockerignore
-├── .env.example
-├── .gitignore
-└── README.md
+## Local Development
 
-⸻
+Clone the repository:
 
-Getting Started (Local Development)
-
-1. Clone the Repository
-
+```bash
 git clone https://github.com/Noveyam/cloud-task-api.git
 cd cloud-task-api
+```
 
-2. Create Virtual Environment
+Create a virtual environment:
 
-python -m venv venv
+```bash
+python3 -m venv venv
 source venv/bin/activate
+```
 
-3. Install Dependencies
+Install dependencies:
 
+```bash
 pip install -r requirements.txt
+```
 
-4. Run Migrations
+Run migrations:
 
-python manage.py migrate
+```bash
+python3 manage.py migrate
+```
 
-5. Start Development Server
+Start the development server:
 
-python manage.py runserver
-
-6. Health Check
-
-GET http://127.0.0.1:8000/health/
-
-Expected response:
-
-{"status": "ok"}
-
-⸻
-
-Run Locally with Docker
-
-The API can also be run using Docker.
-
-Build the image:
-
-docker build -t cloud-task-api .
-
-Run the container:
-
-docker run --rm -p 8000:8000 \
-  -e DJANGO_ALLOWED_HOSTS="127.0.0.1,localhost" \
-  cloud-task-api
+```bash
+python3 manage.py runserver
+```
 
 Test the health endpoint:
 
+```bash
 curl http://127.0.0.1:8000/health/
+```
 
-Environment Variables
+## Run with Docker
 
-The application uses environment variables for configuration.
+Build the image:
 
-Example:
+```bash
+docker build -t cloud-task-api .
+```
 
-DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-DJANGO_SECRET_KEY=your-secret-key
+Run the container:
 
-A sample configuration file is provided:
+```bash
+docker run --rm -p 8000:8000 \
+  -e DJANGO_ALLOWED_HOSTS="127.0.0.1,localhost" \
+  -e DJANGO_SECRET_KEY="your-secret-key" \
+  cloud-task-api
+```
 
-.env.example
+## Project Status
 
-⸻
-
-Deployment Status
-
-#Current
-- EC2 deployment with Nginx + Uvicorn
-- Systemd-managed app service
-- SQLite database
-- Public health check endpoint
+**Completed**
+- Task CRUD API
+- JWT authentication
 - Docker containerization
+- AWS deployment work
+- Kubernetes/EKS deployment work
+- CloudWatch alarm setup and validation
+- Health check and monitoring improvements
 
-#Planned
-- Terraform infrastructure provisioning
-- Deployment to Kubernetes (EKS)
-- PostgreSQL via Amazon RDS
-- CI/CD via GitHub Actions
+**In Progress**
+- Documentation refresh
+- Infrastructure cleanup and alignment
+- CI/CD improvements
 
-⸻
+## Why This Project
 
-Why This Project
-
-This project was built to:
-	•	Practice cloud‑native backend development
-	•	Demonstrate real‑world engineering decisions
-	•	Serve as a strong portfolio piece for backend / cloud roles
-
-⸻
-# test deploy
+This project was built to demonstrate practical backend and cloud engineering skills, including API design, authentication, containerization, infrastructure as code, cloud deployment, monitoring, and troubleshooting.
