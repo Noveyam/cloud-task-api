@@ -1,14 +1,8 @@
 import logging
 
-from django.http import JsonResponse
 from rest_framework import generics, status
-from rest_framework.decorators import (
-    api_view,
-    renderer_classes,
-    permission_classes,
-    authentication_classes,
-)
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
@@ -43,14 +37,3 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
 def health_check(request):
     logger.info("Health check called")
     return Response({"status": "ok"}, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-@authentication_classes([])
-@permission_classes([AllowAny])
-@renderer_classes([JSONRenderer])
-def test_500(request):
-    return Response(
-        {"error": "intentional test 500"},
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    )
