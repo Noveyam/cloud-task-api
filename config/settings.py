@@ -68,13 +68,16 @@ if sentry_sdk and SENTRY_DSN and not DEBUG:
 # DATABASE
 DB_NAME = os.getenv("DB_NAME") or read_secret_file("/mnt/secrets/DB_NAME")
 DB_USER = os.getenv("DB_USER") or read_secret_file("/mnt/secrets/DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD") or read_secret_file("/mnt/secrets/DB_PASSWORD")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+secret_db_password = read_secret_file("/mnt/secrets/DB_PASSWORD")
+if not DB_PASSWORD and secret_db_password:
+    DB_PASSWORD = secret_db_password
 DB_HOST = os.getenv("DB_HOST") or read_secret_file("/mnt/secrets/DB_HOST")
 DB_PORT = os.getenv("DB_PORT") or read_secret_file("/mnt/secrets/DB_PORT") or "5432"
 
 ALLOW_SQLITE_FOR_CI = os.getenv("ALLOW_SQLITE_FOR_CI", "False").lower() in ("true", "1", "yes")
 
-if DB_NAME and DB_USER and DB_PASSWORD and DB_HOST:
+if DB_NAME and DB_USER and DB_HOST:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -210,7 +213,7 @@ SIMPLE_JWT = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Los_Angeles'
 
 USE_I18N = True
 
@@ -228,6 +231,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Logging Configuration
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 LOGGING = {
     "version": 1,
@@ -248,12 +252,12 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": "INFO",
+            "level": LOG_LEVEL,
             "propagate": True,
         },
         "request": {
             "handlers": ["console"],
-            "level": "INFO",
+            "level": LOG_LEVEL,
             "propagate": False,
         },
         "django.security.DisallowedHost": {
@@ -264,6 +268,6 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "INFO",
+        "level": LOG_LEVEL,
     },
 }
