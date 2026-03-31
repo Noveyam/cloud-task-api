@@ -2,8 +2,13 @@ import logging
 
 from django.http import JsonResponse
 from rest_framework import generics, status
-from rest_framework.decorators import api_view, renderer_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (
+    api_view,
+    renderer_classes,
+    permission_classes,
+    authentication_classes,
+)
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
@@ -41,6 +46,8 @@ def health_check(request):
 
 
 @api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 @renderer_classes([JSONRenderer])
 def test_500(request):
     return Response(
