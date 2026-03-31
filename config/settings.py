@@ -88,6 +88,9 @@ if DB_NAME and DB_USER and DB_HOST:
             "PORT": DB_PORT,
             "CONN_MAX_AGE": 60,
             "CONN_HEALTH_CHECKS": True,
+             "OPTIONS": {
+                "sslmode": "require",
+            },
         }
     }
 elif ALLOW_SQLITE_FOR_CI:

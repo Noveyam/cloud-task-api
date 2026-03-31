@@ -12,6 +12,7 @@ build/
 # Environment
 .env
 .env.local
+.env.*
 
 # IDE
 .vscode/
@@ -37,6 +38,3 @@ Thumbs.db
 **/crash.log
 **/.terraformrc
 **/terraform.rc
-
-#Docker
-.dockerignore
