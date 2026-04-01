@@ -103,6 +103,15 @@ elif ALLOW_SQLITE_FOR_CI:
 else:
     raise RuntimeError("Database configuration missing — refusing to start")
 
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+    }
+}
+
 # SECURITY WARNING: don't run with debug turned on in production!
 
 ALLOWED_HOSTS = [
