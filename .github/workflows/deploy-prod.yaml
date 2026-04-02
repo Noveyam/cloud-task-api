@@ -65,6 +65,7 @@ jobs:
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          role-session-name: GitHubActions
 
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -97,16 +98,9 @@ jobs:
           kubectl apply -f k8s/serviceaccount.yaml
           kubectl apply -f k8s/secretproviderclass.yaml
           kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/deployment.yaml
           sed "s|GIT_SHA_PLACEHOLDER|${{ github.sha }}|g" k8s/deployment.yaml | kubectl apply -f -
           kubectl apply -f k8s/hpa.yaml
           kubectl apply -f k8s/ingress.yaml
-
-      - name: Inject release version into prod deployment
-        run: |
-          kubectl set env deployment/$DEPLOYMENT_NAME \
-            RELEASE_VERSION=${{ github.sha }} \
-            -n $K8S_NAMESPACE
 
       - name: Delete old migration job if it exists
         run: |
@@ -176,12 +170,6 @@ jobs:
                 ]
               }
             }'
-
-      - name: Deploy new prod image
-        run: |
-          kubectl set image deployment/$DEPLOYMENT_NAME \
-            $CONTAINER_NAME=$IMAGE_URI \
-            -n $K8S_NAMESPACE
 
       - name: Wait for rollout
         id: rollout

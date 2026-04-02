@@ -65,6 +65,7 @@ jobs:
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          role-session-name: GitHubActions
 
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -98,17 +99,11 @@ jobs:
           kubectl apply -f k8s/staging/serviceaccount.yaml
           kubectl apply -f k8s/staging/secretproviderclass.yaml
           kubectl apply -f k8s/staging/service.yaml
-          kubectl apply -f k8s/staging/deployment.yaml
+          sed "s|GIT_SHA_PLACEHOLDER|${{ github.sha }}|g" k8s/staging/deployment.yaml | kubectl apply -f -
           kubectl apply -f k8s/staging/hpa.yaml
           kubectl apply -f k8s/staging/ingress.yaml
           kubectl apply -f k8s/staging/cronjob-scale-down.yaml
           kubectl apply -f k8s/staging/cronjob-scale-up.yaml
-
-      - name: Inject release version into staging deployment
-        run: |
-          kubectl set env deployment/$DEPLOYMENT_NAME \
-            RELEASE_VERSION=${{ github.sha }} \
-            -n $K8S_NAMESPACE
 
       - name: Delete old migration job if it exists
         run: |
@@ -136,12 +131,6 @@ jobs:
         if: always()
         run: |
           kubectl logs -n $K8S_NAMESPACE -l job-name=cloud-task-api-migrate --tail=200 || true
-
-      - name: Deploy new staging image
-        run: |
-          kubectl set image deployment/$DEPLOYMENT_NAME \
-            $CONTAINER_NAME=$IMAGE_URI \
-            -n $K8S_NAMESPACE
 
       - name: Wait for rollout
         run: |
