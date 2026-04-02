@@ -30,3 +30,27 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: staging-scaler
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-actions-deploy
+  namespace: staging
+rules:
+  - apiGroups: ["secrets-store.csi.x-k8s.io"]
+    resources: ["secretproviderclasses"]
+    verbs: ["get", "list", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-actions-deploy
+  namespace: staging
+subjects:
+  - kind: User
+    name: "arn:aws:sts::766158721264:assumed-role/github-actions-deploy-cloud-task-api/GitHubActions"
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: github-actions-deploy
