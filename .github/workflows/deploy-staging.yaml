@@ -101,7 +101,6 @@ jobs:
           kubectl apply -f k8s/staging/deployment.yaml
           kubectl apply -f k8s/staging/hpa.yaml
           kubectl apply -f k8s/staging/ingress.yaml
-          kubectl apply -f k8s/staging/rbac-scale.yaml
           kubectl apply -f k8s/staging/cronjob-scale-down.yaml
           kubectl apply -f k8s/staging/cronjob-scale-up.yaml
 
