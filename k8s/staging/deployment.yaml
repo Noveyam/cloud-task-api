@@ -62,6 +62,10 @@ spec:
               value: "GIT_SHA_PLACEHOLDER"
             - name: SENTRY_ENVIRONMENT
               value: "staging"
+            - name: OTEL_PYTHON_DJANGO_EXCLUDED_URLS
+              value: "/health/"
+            - name: OTEL_PYTHON_EXCLUDED_URLS
+              value: "/health/"
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config
