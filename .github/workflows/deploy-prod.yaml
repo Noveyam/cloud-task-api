@@ -89,7 +89,7 @@ jobs:
       - name: Verify cluster access
         run: |
           kubectl config current-context
-          kubectl get nodes
+          kubectl get pods -n $K8S_NAMESPACE
 
       - name: Apply prod manifests
         run: |
