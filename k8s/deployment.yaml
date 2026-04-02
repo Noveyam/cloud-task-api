@@ -58,7 +58,7 @@ spec:
             failureThreshold: 6
           env:
             - name: RELEASE_VERSION
-              value: "4c1e056634b31dac22d55cc738eb112eb9994a5e"
+              value: "GIT_SHA_PLACEHOLDER"
             - name: SENTRY_ENVIRONMENT
               value: "production"
             - name: OTEL_PYTHON_DJANGO_EXCLUDED_URLS
