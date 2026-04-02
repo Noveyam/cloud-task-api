@@ -30,7 +30,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
       containers:
         - name: api
-          image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:4c1e056634b31dac22d55cc738eb112eb9994a5e
+          image: 766158721264.dkr.ecr.us-east-1.amazonaws.com/cloud-task-api:GIT_SHA_PLACEHOLDER
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -61,12 +61,16 @@ spec:
               value: "GIT_SHA_PLACEHOLDER"
             - name: SENTRY_ENVIRONMENT
               value: "production"
+            - name: OTEL_PYTHON_DJANGO_EXCLUDED_URLS
+              value: "/health/"
+            - name: OTEL_PYTHON_EXCLUDED_URLS
+              value: "/health/"
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config
           resources:
             requests:
-              memory: "96Mi"
+              memory: "128Mi"
               cpu: "25m"
             limits:
               memory: "256Mi"
