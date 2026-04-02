@@ -58,15 +58,19 @@ spec:
             failureThreshold: 6
           env:
             - name: RELEASE_VERSION
-              value: "GIT_SHA_PLACEHOLDER"
+              value: "4c1e056634b31dac22d55cc738eb112eb9994a5e"
             - name: SENTRY_ENVIRONMENT
               value: "production"
+            - name: OTEL_PYTHON_DJANGO_EXCLUDED_URLS
+              value: "/health/"
+            - name: OTEL_PYTHON_EXCLUDED_URLS
+              value: "/health/"
           envFrom:
             - configMapRef:
                 name: cloud-task-api-config
           resources:
             requests:
-              memory: "96Mi"
+              memory: "128Mi"
               cpu: "25m"
             limits:
               memory: "256Mi"
