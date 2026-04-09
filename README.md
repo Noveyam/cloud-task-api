@@ -34,13 +34,20 @@ Authenticated users can:
 
 Client  
 → AWS Application Load Balancer  
-→ Kubernetes Service  
-→ Django API containers on EKS  
-→ Database
+→ Kubernetes Service / Ingress  
+→ Django API containers on Amazon EKS  
+→ Amazon RDS (PostgreSQL)
+
+Background processing:
+
+Django API  
+→ Redis broker  
+→ Celery worker  
+→ Database / async task execution
 
 Monitoring and alerting:
 
-Application / Kubernetes / ALB metrics  
+Application / Kubernetes / ALB metrics / logs
 → Amazon CloudWatch  
 → Alarm-based alerting
 
@@ -85,18 +92,25 @@ Example response:
 - Django
 - Django REST Framework
 - JWT Authentication
+- Celery
+
+**Data / Messaging**
+- PostgreSQL
+- Amazon RDS
+- Redis
 
 **Infrastructure / DevOps**
 - Docker
 - Terraform
 - Kubernetes
-- AWS EKS
+- Amazon EKS
 - AWS Application Load Balancer
 - Amazon CloudWatch
-- ECR / IAM
+- Amazon ECR
+- IAM
 
 **Development**
-- SQLite for local development
+- SQLite for early local development
 - Git / GitHub
 - Linux/macOS CLI tooling
 
@@ -106,7 +120,12 @@ Example response:
 - User-level data isolation
 - Non-root container execution
 - Environment-variable based configuration
+- IAM-managed cloud access patterns
 - Health endpoint for service validation and monitoring
+
+## Background Processing
+
+The project uses Redis and Celery to support asynchronous task execution and to extend the API beyond simple request/response handling. This makes the architecture more production-oriented and provides a foundation for scheduled jobs, retries, and longer-running background workflows.
 
 ## Monitoring
 
@@ -186,16 +205,33 @@ docker run --rm -p 8000:8000 \
 - Task CRUD API
 - JWT authentication
 - Docker containerization
-- AWS deployment work
-- Kubernetes/EKS deployment work
+- Terraform-managed AWS infrastructure
+- Amazon EKS deployment
+- Amazon RDS integration
+- Redis and Celery integration
 - CloudWatch alarm setup and validation
 - Health check and monitoring improvements
 
 **In Progress**
-- Documentation refresh
-- Infrastructure cleanup and alignment
+- Terraform cleanup and infrastructure alignment
+- EKS access entry management
+- Pod identity association cleanup
+- CloudWatch add-on standardization
 - CI/CD improvements
+- Documentation refresh
 
 ## Why This Project
 
 This project was built to demonstrate practical backend and cloud engineering skills, including API design, authentication, containerization, infrastructure as code, cloud deployment, monitoring, and troubleshooting.
+
+## Production-Focused Work
+
+This project includes production-oriented engineering work such as:
+
+- Infrastructure as code with Terraform
+- Kubernetes deployment on Amazon EKS
+- Managed PostgreSQL with Amazon RDS
+- Redis and Celery for asynchronous processing
+- ALB health checks and traffic routing
+- CloudWatch alarms for API, ALB, pod, container, CPU, memory, latency, and capacity signals
+- Ongoing infrastructure cleanup to reduce manual operational steps
